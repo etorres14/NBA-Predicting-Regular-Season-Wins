@@ -1,27 +1,52 @@
+###Simple Linear Regression
 library(readxl)
-NbaTeam1617 <- read_excel("Desktop/math494/NbaTeam1617.xlsx")
+NbaTeam1617 <- read_excel("Desktop/linear regression/NbaTeam1617.xlsx")
 View(NbaTeam1617)
 
-won = NbaTeam1617$won
-ThreePointAttempts = NbaTeam1617$`3a`
-summary(cbind(won,ThreePointAttempts))
-model1 = lm(won~ThreePointAttempts)
-summary(model1)
+#Using 3pa as predictor variable
+won = NbaTeam1617$won #response variable
+ThreePointAttempts = NbaTeam1617$`3a` #explanatory variable
 
+#Take a look at summary of data to check for outliers
+summary(cbind(won,ThreePointAttempts))
+boxplot(won, xlab = "Wins", ylab = "# of Wins")
+hist(won) #won looks normal!
+
+boxplot(ThreePointAttempts ) #notice Rockets' 3pa is an outlier, we'll leave it in though.
+hist(ThreePointAttempts)
+shapiro.test(ThreePointAttempts) #ThreePointAttempts are normal too!
+
+                   
+model1 = lm(won ~ ThreePointAttempts)
+summary(model1)
+# R - Squared value measure how much of the variation in Y (Wins) can be explained by X (ThreePointAttempts)
+# Our model's R-Squared Value is pretty low at .07609
+# notice our p-value for both the intercept and ThreePointAttempts isn't significant either.
+
+#this is our linear regression model of our data  with the following response and explanatory variables
 yHat = function(x){
   y = 20.783 + x*0.009133
   return(y)
 }
+
+#A plot of our data with or linear regression line
 plot(ThreePointAttempts,won)
 lines(ThreePointAttempts,yHat(ThreePointAttempts))
-plot(model1)
 
-### using 3P made as explanatory variable
+plot(model1)
+#decent spread, centered at zero, balanced above and below line
+#constant variability in residual plot
+
+
+#############################################
+
+# using 3P made as explanatory variable
 won = NbaTeam1617$won
 ThreePointersMade = NbaTeam1617$`3m`
 summary(cbind(won,ThreePointersMade))
 model2 = lm(won~ThreePointersMade)
 summary(model2)
+
 
 yHat = function(x){
   y = 11.20082 + x*.03764
@@ -30,6 +55,8 @@ yHat = function(x){
 plot(ThreePointersMade,won)
 lines(ThreePointersMade,yHat(ThreePointersMade))
 plot(model2)
+
+#########################################################
 
 #using #3p% as explanatory variable
 
@@ -47,6 +74,7 @@ plot(ThreePoinPercent,won)
 lines(ThreePoinPercent,yHat(ThreePoinPercent))
 plot(model2)
 
+#########################################################
 
 #using Fieldgoal percentage as explanatory variable
 won = NbaTeam1617$won
@@ -84,20 +112,46 @@ lines(PointDiffer,yHat(PointDiffer))
 plot(model2)
 qqplot(model2)
 
+#########################################################
 
-#multiple regression
+###MULTIPLE LINEAR REGRESSION
+
+#more predictor variables
+#used step-wise regression to end up with a model containing only significant variables
 rebounds = NbaTeam1617$tr
 twoPtPerc = NbaTeam1617$`2p%`
-threPtPerc = NbaTeam1617$`3p%`
+threePtPerc = NbaTeam1617$`3p%`
 steals = NbaTeam1617$st
 turnovers = NbaTeam1617$to
 blocks = NbaTeam1617$bk
 assist = NbaTeam1617$as
 offReb = NbaTeam1617$or
-ppg = NbaTeam1617$`Pts/gm`
 
-multmodel = lm(won~ rebounds + twoPtPerc + ThreePoinPercent  + turnovers + steals + ppg )
+
+orebounds = NbaTeam1617$`O tr`
+otwoPtPerc = NbaTeam1617$`O 2p%`
+othreePtPerc = NbaTeam1617$`O 3p%`
+osteals = NbaTeam1617$`O st`
+oturnovers = NbaTeam1617$`O tr`
+oblocks = NbaTeam1617$`O bk`
+oassist = NbaTeam1617$`O as`
+ooffReb = NbaTeam1617$`O or`
+
+
+#
+multmodel = lm(won~ rebounds + twoPtPerc + threePtPerc  + turnovers + steals + assist  + orebounds
+               + otwoPtPerc + othreePtPerc + oturnovers + orebounds + ooffReb )
 summary(multmodel)
-drop1(multmodel, test = 'F')
+
+
+multmodel = lm(won~ rebounds + twoPtPerc + threePtPerc  + turnovers  + blocks
+               + otwoPtPerc + othreePtPerc + oturnovers + orebounds )
+
+summary(multmodel)
+
 plot(multmodel)
+#decent spread, centered at zero, balanced above and below line
+#constant variability in residual plot
 qqplot(multmodel)
+#checking for multi-varaite normality
+#point land nicely on the line
